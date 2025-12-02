@@ -15,6 +15,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LiteJoin">
         <activity
+            android:name=".activity.PostDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.PostWriteActivity"
             android:exported="false" />
         <activity

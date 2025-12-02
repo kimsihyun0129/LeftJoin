@@ -45,8 +45,13 @@ class PostWriteActivity : AppCompatActivity() {
         }
 
         if (postId != null) {
-            // 수정 모드: 데이터 로드 및 UI 업데이트
+            // 1. 수정 모드 (게시글 목록에서 본인 글 클릭 시)
+            binding.btnWriteOrEdit.text = "수정하기"
             loadPostData(postId!!)
+        } else {
+            // 2. 작성 모드 (FAB 클릭 시)
+            binding.btnWriteOrEdit.text = "작성하기"
+            // 데이터 로드는 필요 없음
         }
     }
 
@@ -65,8 +70,6 @@ class PostWriteActivity : AppCompatActivity() {
 
     // --- 수정 모드 데이터 로드 ---
     private fun loadPostData(id: String) {
-        binding.btnWriteOrEdit.text = "수정하기" // 버튼 텍스트 변경
-
         firestore.collection("posts").document(id).get()
             .addOnSuccessListener { document ->
                 val post = document.toObject(Post::class.java)

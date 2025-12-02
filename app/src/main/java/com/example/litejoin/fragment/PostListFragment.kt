@@ -12,7 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.litejoin.R
-//import com.example.litejoin.activity.PostDetailActivity
+import com.example.litejoin.activity.PostDetailActivity
 import com.example.litejoin.activity.PostWriteActivity
 import com.example.litejoin.adapter.PostAdapter
 import com.example.litejoin.databinding.FragmentPostListBinding
@@ -89,16 +89,17 @@ class PostListFragment : Fragment() {
     private fun handlePostClick(post: Post) {
         // 클릭한 게시글이 본인이 작성한 글인지 확인
         if (post.authorUid == currentUid) {
-            // 본인 글: 게시글 수정/작성 화면으로 이동 (PostWriteActivity)
+            // **본인 글:** 게시글 수정/작성 화면으로 이동
             val intent = Intent(requireContext(), PostWriteActivity::class.java)
-            intent.putExtra("POST_ID", post.postId) // 수정 모드임을 알림
+            intent.putExtra("POST_ID", post.postId) // 게시글 ID 전달 (수정 모드 활성화)
+            // 별도의 "수정하기" 모드 플래그를 전달할 필요 없이, ID 존재 여부로 판단합니다.
             startActivity(intent)
 
         } else {
-            // 타인 글: 게시글 상세 화면으로 이동 (PostDetailActivity)
-//            val intent = Intent(requireContext(), PostDetailActivity::class.java)
-//            intent.putExtra("POST_ID", post.postId) // 상세 정보를 로드하기 위한 ID 전달
-//            startActivity(intent)
+            // **타인 글:** 게시글 상세 화면으로 이동
+            val intent = Intent(requireContext(), PostDetailActivity::class.java)
+            intent.putExtra("POST_ID", post.postId) // 상세 정보를 로드하기 위한 ID 전달
+            startActivity(intent)
         }
     }
 
