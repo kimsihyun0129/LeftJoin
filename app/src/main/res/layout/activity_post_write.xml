@@ -27,7 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:hint="제목 (필수)">
+                android:hint="제목">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_title"
                     android:layout_width="match_parent"
@@ -56,15 +56,14 @@
                     android:id="@+id/et_max_members"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:text="1"/>
+                    android:inputType="number" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:hint="만남/활동 장소 (필수)">
+                android:hint="만남/활동 장소">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_location"
                     android:layout_width="match_parent"

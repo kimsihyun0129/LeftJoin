@@ -89,37 +89,73 @@ class PostWriteActivity : AppCompatActivity() {
     private fun savePost() {
         val uid = auth.currentUser?.uid
         val title = binding.etTitle.text.toString().trim()
+        val shortDescription = binding.etShortDescription.text.toString().trim() // ⬅️ 추가
         val location = binding.etLocation.text.toString().trim()
         val maxMembersStr = binding.etMaxMembers.text.toString().trim()
+        val estimatedCostStr = binding.etEstimatedCost.text.toString().trim() // ⬅️ 추가
 
-        // 필수 필드 유효성 검사
-        if (uid == null || authorNickname == null || title.isEmpty() || location.isEmpty()) {
-            Toast.makeText(this, "제목, 장소, 닉네임은 필수입니다.", Toast.LENGTH_SHORT).show()
+        // 닉네임, 제목, 한줄 소개, 인원, 장소, 예상 비용을 모두 필수로 검사합니다.
+        if (uid == null || authorNickname == null) {
+            Toast.makeText(this, "사용자 인증 정보가 유효하지 않습니다.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val maxMembers = maxMembersStr.toIntOrNull() ?: 1
+        if (title.isEmpty() || shortDescription.isEmpty() || location.isEmpty() ||
+            maxMembersStr.isEmpty() || estimatedCostStr.isEmpty()) {
+
+            Toast.makeText(this, "제목, 한줄 소개, 인원, 장소, 예상 비용은 모두 필수 입력 항목입니다.", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // 숫자 필드 유효성 검사 (숫자 형태인지 확인)
+        val maxMembers = maxMembersStr.toIntOrNull()
+        val estimatedCost = estimatedCostStr.toIntOrNull()
+
+        if (maxMembers == null || maxMembers <= 0) {
+            Toast.makeText(this, "모집 인원은 1명 이상의 숫자로 입력해야 합니다.", Toast.LENGTH_LONG).show()
+            return
+        }
+        if (estimatedCost == null || estimatedCost < 0) {
+            Toast.makeText(this, "예상 비용은 0 이상의 숫자로 입력해야 합니다.", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // 유효성 검사를 통과하면 Firestore에 저장하는 로직을 실행합니다.
+        savePostToFirestore(uid)
+    }
+
+    // savePostToFirestore 함수는 변경된 파라미터(maxMembers, estimatedCost)를 사용하여 업데이트 필요
+    private fun savePostToFirestore(uid: String) {
+        // 이전 savePost 로직에서 maxMembers와 estimatedCost를 계산했으므로,
+        // 이 함수를 호출할 때 해당 값을 전달하도록 수정해야 합니다.
+
+        // 이전에 PostWriteActivity.kt 에서 savePostToFirestore(uid)를 호출했는데,
+        // savePost(uid) 내에서 maxMembers와 estimatedCost를 계산하므로
+        // savePostToFirestore(uid, maxMembers, estimatedCost)로 파라미터를 추가하는 것이 더 깔끔합니다.
+
+        // 편의를 위해, savePost 내부에서 모든 변수를 정의하고 바로 저장합니다.
+
+        val maxMembers = binding.etMaxMembers.text.toString().toIntOrNull() ?: 1
         val estimatedCost = binding.etEstimatedCost.text.toString().toIntOrNull() ?: 0
 
         val newPost = Post(
-            postId = postId ?: firestore.collection("posts").document().id, // 새 문서 ID 생성
+            postId = postId ?: firestore.collection("posts").document().id,
             authorUid = uid,
             authorNickname = authorNickname!!,
-            title = title,
+            title = binding.etTitle.text.toString().trim(),
             shortDescription = binding.etShortDescription.text.toString().trim(),
             maxMembers = maxMembers,
-            currentMembers = if (postId == null) 1 else maxMembers, // 수정 시에는 현재 인원수를 최대 인원과 동일하게 설정하는 임시 로직 유지
-            location = location,
+            currentMembers = if (postId == null) 1 else maxMembers,
+            location = binding.etLocation.text.toString().trim(),
             estimatedCost = estimatedCost,
             content = binding.etContent.text.toString().trim()
-            // postImageUrl 필드는 없음
         )
 
         // Firestore 저장 (새 글이든 수정이든 set() 사용)
         firestore.collection("posts").document(newPost.postId).set(newPost)
             .addOnSuccessListener {
                 Toast.makeText(this, if (postId == null) "게시글이 작성되었습니다." else "게시글이 수정되었습니다.", Toast.LENGTH_SHORT).show()
-                finish() // 메인 화면으로 돌아가기
+                finish()
             }
             .addOnFailureListener {
                 Toast.makeText(this, "게시글 저장 실패: ${it.message}", Toast.LENGTH_LONG).show()
