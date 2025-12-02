@@ -10,7 +10,7 @@
 
     <include
         android:id="@+id/toolbar"
-        layout="@layout/custom_toolbar_write" />
+        layout="@layout/custom_toolbar" />
 
     <ScrollView
         android:layout_width="match_parent"

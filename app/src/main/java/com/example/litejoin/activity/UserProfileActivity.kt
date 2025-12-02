@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.example.litejoin.databinding.ActivityUserProfileBinding
+import com.example.litejoin.databinding.CustomToolbarUserInfoBinding
 import com.example.litejoin.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -25,6 +26,7 @@ class UserProfileActivity : AppCompatActivity() {
     private val firestore = FirebaseFirestore.getInstance()
     private val storage = FirebaseStorage.getInstance()
     private var selectedImageUri: Uri? = null
+    private lateinit var toolbarBinding: CustomToolbarUserInfoBinding // 툴바 바인딩 선언
 
     // 갤러리 접근 권한 요청 계약
     private val requestPermissionLauncher =
@@ -51,34 +53,40 @@ class UserProfileActivity : AppCompatActivity() {
         binding = ActivityUserProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // TODO: [툴바 구현 필요] 커스텀 툴바 설정을 여기에 추가해야 합니다.
-        // 현재는 편의상 뒤로가기 버튼만 임시로 처리합니다.
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "사용자 정보 입력"
+        // 1. 툴바 설정 및 초기화 (가장 먼저 실행)
+        // activity_user_profile.xml에 <include id="@+id/toolbar" ...>가 있다고 가정
+        toolbarBinding = CustomToolbarUserInfoBinding.bind(binding.toolbar.root)
+        setSupportActionBar(toolbarBinding.root)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
-        // 1. 프로필 이미지 첨부 버튼 리스너
+        // 2. 툴바 뒤로가기 버튼 리스너 설정 (초기화 후 설정)
+        toolbarBinding.btnBack.setOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
+
+        // [수정] 아래의 supportActionBar를 사용한 임시 처리는 커스텀 툴바 사용 시 불필요하므로 제거합니다.
+        // supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        // supportActionBar?.title = "사용자 정보 입력"
+
+        // 3. 프로필 이미지 첨부 버튼 리스너
         binding.btnAttachPhoto.setOnClickListener {
             checkStoragePermission()
         }
 
-        // 2. 저장 버튼 리스너
+        // 4. 저장 버튼 리스너
         binding.btnSave.setOnClickListener {
             saveUserProfile()
         }
 
-        // 기존 정보가 있다면 불러와서 표시 (수정 시나리오)
+        // 5. 기존 정보 로드 (수정 시나리오)
         loadUserProfile()
     }
 
-    // 뒤로가기 버튼 처리
-    override fun onSupportNavigateUp(): Boolean {
-        finish()
-        return true
-    }
+    // [수정] onSupportNavigateUp() 함수는 커스텀 툴바의 btnBack 리스너를 사용하므로 불필요합니다.
+    // override fun onSupportNavigateUp(): Boolean { finish(); return true }
 
     // --- 이미지 처리 로직 ---
     private fun checkStoragePermission() {
-        // Android 13 이상에서는 READ_MEDIA_IMAGES, 이하에서는 READ_EXTERNAL_STORAGE 권한 확인
         val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.READ_MEDIA_IMAGES
         } else {
@@ -87,7 +95,6 @@ class UserProfileActivity : AppCompatActivity() {
 
         when {
             ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> {
-                // 권한이 이미 있다면 갤러리 열기
                 openGallery()
             }
             shouldShowRequestPermissionRationale(permission) -> {
@@ -95,7 +102,6 @@ class UserProfileActivity : AppCompatActivity() {
                 requestPermissionLauncher.launch(permission)
             }
             else -> {
-                // 권한 요청
                 requestPermissionLauncher.launch(permission)
             }
         }
@@ -176,7 +182,6 @@ class UserProfileActivity : AppCompatActivity() {
             studentId = if (studentId.isEmpty()) null else studentId,
             phoneNumber = if (phoneNumber.isEmpty()) null else phoneNumber,
             profileImageUrl = profileImageUrl
-            // createdAt 필드는 FireStore ServerTimestamp에 의해 자동 저장됨
         )
 
         firestore.collection("users").document(uid).set(userMap)

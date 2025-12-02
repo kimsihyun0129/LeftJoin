@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.litejoin.databinding.ActivityPostWriteBinding
-import com.example.litejoin.databinding.CustomToolbarWriteBinding
+import com.example.litejoin.databinding.CustomToolbarBinding
 import com.example.litejoin.model.Post
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -12,7 +12,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class PostWriteActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPostWriteBinding
-    private lateinit var toolbarBinding: CustomToolbarWriteBinding
+    private lateinit var toolbarBinding: CustomToolbarBinding
 
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
@@ -28,7 +28,7 @@ class PostWriteActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // 툴바 설정
-        toolbarBinding = CustomToolbarWriteBinding.bind(binding.toolbar.root)
+        toolbarBinding = CustomToolbarBinding.bind(binding.toolbar.root)
         setSupportActionBar(toolbarBinding.root)
         supportActionBar?.setDisplayShowTitleEnabled(false)
         toolbarBinding.btnBack.setOnClickListener { finish() }
@@ -70,6 +70,8 @@ class PostWriteActivity : AppCompatActivity() {
 
     // --- 수정 모드 데이터 로드 ---
     private fun loadPostData(id: String) {
+        binding.btnWriteOrEdit.text = "수정하기" // 버튼 텍스트 변경
+
         firestore.collection("posts").document(id).get()
             .addOnSuccessListener { document ->
                 val post = document.toObject(Post::class.java)

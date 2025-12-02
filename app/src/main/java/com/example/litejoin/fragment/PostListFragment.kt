@@ -1,5 +1,3 @@
-// com.example.litejoin/fragment/PostListFragment.kt (로직 추가)
-
 package com.example.litejoin.fragment
 
 import android.content.Intent
@@ -48,7 +46,8 @@ class PostListFragment : Fragment() {
         setupRecyclerView()
         loadPostList()
 
-        // FAB 클릭 시 게시글 작성 화면으로 이동
+        // 1. FAB 클릭 시 게시글 작성 화면으로 이동 (작성 모드)
+        // [중요] 이 기능이 앱을 종료시킨다면, PostWriteActivity가 AndroidManifest에 등록되었는지 확인하세요.
         binding.fabAddPost.setOnClickListener {
             val intent = Intent(requireContext(), PostWriteActivity::class.java)
             startActivity(intent)
@@ -87,16 +86,15 @@ class PostListFragment : Fragment() {
     }
 
     private fun handlePostClick(post: Post) {
-        // 클릭한 게시글이 본인이 작성한 글인지 확인
+        // 2. 아이템 클릭 시 본인/타인 글 분기 로직
         if (post.authorUid == currentUid) {
-            // **본인 글:** 게시글 수정/작성 화면으로 이동
+            // **본인 글:** 게시글 수정/작성 화면으로 이동 (수정 모드)
             val intent = Intent(requireContext(), PostWriteActivity::class.java)
-            intent.putExtra("POST_ID", post.postId) // 게시글 ID 전달 (수정 모드 활성화)
-            // 별도의 "수정하기" 모드 플래그를 전달할 필요 없이, ID 존재 여부로 판단합니다.
+            intent.putExtra("POST_ID", post.postId) // 게시글 ID 전달 -> PostWriteActivity에서 '수정하기' 버튼 활성화
             startActivity(intent)
 
         } else {
-            // **타인 글:** 게시글 상세 화면으로 이동
+            // **타인 글:** 게시글 상세 화면으로 이동 (조회 전용)
             val intent = Intent(requireContext(), PostDetailActivity::class.java)
             intent.putExtra("POST_ID", post.postId) // 상세 정보를 로드하기 위한 ID 전달
             startActivity(intent)
@@ -105,6 +103,7 @@ class PostListFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // 메모리 누수를 방지하기 위해 바인딩 해제
         _binding = null
     }
 }
