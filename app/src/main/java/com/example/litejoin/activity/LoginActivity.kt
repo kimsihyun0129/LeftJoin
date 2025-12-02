@@ -11,12 +11,14 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FirebaseFirestore
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
+    private val firestore = FirebaseFirestore.getInstance()
 
     // Google Sign-In 요청 코드
     private val RC_SIGN_IN = 9001
@@ -119,14 +121,38 @@ class LoginActivity : AppCompatActivity() {
             }
     }
 
-    // --- 화면 전환 로직 ---
-    // 사용자 정보 입력 여부를 확인하여 분기하는 로직이 들어갈 예정입니다.
+
+    //로그인 성공 후 사용자 정보 입력 여부에 따라 화면을 분기합니다.
     private fun navigateToNextScreen() {
-        // TODO: [중요] 사용자 정보가 입력되었는지 Firestore에서 확인하는 로직 추가 필요
-        // 현재는 편의상 바로 MainActivity로 이동하도록 임시 구현합니다.
-        val intent = Intent(this, MainActivity::class.java) // MainActivity는 다음 단계에서 구현
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK) // 이전 스택 모두 제거
-        startActivity(intent)
-        finish()
+        val uid = auth.currentUser?.uid
+        if (uid == null) {
+            Toast.makeText(this, "인증 정보가 유효하지 않습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Firestore의 'users' 컬렉션에서 현재 UID의 문서 조회
+        firestore.collection("users").document(uid).get()
+            .addOnSuccessListener { document ->
+                if (document.exists() && document.getString("nickname")?.isNotEmpty() == true) {
+                    // 1. 사용자 정보가 이미 입력된 경우 (닉네임이 존재)
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                } else {
+                    // 2. 사용자 정보가 없는 경우 (최초 로그인 또는 미입력)
+                    val intent = Intent(this, UserProfileActivity::class.java)
+                    // 현재 사용자 정보를 입력하지 않았다면, 로그아웃하지 않고 정보 입력 화면으로만 이동합니다.
+                    startActivity(intent)
+                }
+
+                // 스택 정리를 위해 현재 Activity 종료
+                finish()
+            }
+            .addOnFailureListener { e ->
+                // DB 조회 자체에 실패한 경우에도 정보 입력 화면으로 유도하여 등록을 시도하게 합니다.
+                Toast.makeText(this, "사용자 정보 확인에 실패했습니다. 정보 입력 화면으로 이동합니다. ${e.message}", Toast.LENGTH_LONG).show()
+                val intent = Intent(this, UserProfileActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
     }
 }
