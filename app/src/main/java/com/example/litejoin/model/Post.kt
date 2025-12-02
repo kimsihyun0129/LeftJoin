@@ -14,7 +14,6 @@ data class Post(
     val estimatedCost: Int = 0, // 예상 비용
     val location: String = "", // 만남/활동 장소 (추가된 필드)
     val content: String = "", // 추가 사항 (본문 내용)
-    val postImageUrl: String? = null, // 게시글 첨부 이미지 URL (Firebase Storage)
     @ServerTimestamp
     val createdAt: Date? = null // 게시글 작성 시간 (정렬 기준)
 )
