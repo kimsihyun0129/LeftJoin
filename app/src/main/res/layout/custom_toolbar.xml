@@ -22,7 +22,6 @@
             android:contentDescription="뒤로가기"
             android:focusable="true"
             android:src="@drawable/ic_arrow_back"
-            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

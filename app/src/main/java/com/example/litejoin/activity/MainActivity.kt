@@ -44,16 +44,16 @@ class MainActivity : AppCompatActivity() {
 
     // --- 툴바 로직 ---
     private fun setupToolbar() {
-        // 메인 화면에서는 뒤로가기 버튼 숨김
-        toolbarBinding.btnBack.visibility = android.view.View.GONE
+        // 메인 화면에서는 뒤로가기 버튼을 비활성화하고 숨김 처리 (기능 없음)
+        toolbarBinding.btnBack.visibility = android.view.View.GONE // ⬅️ 숨김 처리
+        toolbarBinding.btnBack.setOnClickListener(null) // ⬅️ 리스너 제거
 
-        // 사용자 정보 레이아웃 클릭 시 프로필 화면으로 이동
+        // 오른쪽 사용자 정보 레이아웃 클릭 시 프로필 화면으로 이동
         toolbarBinding.layoutUserProfileTrigger.setOnClickListener {
             val intent = Intent(this, UserProfileActivity::class.java)
             startActivity(intent)
         }
 
-        // 현재 사용자 닉네임 로드
         loadUserNickname()
     }
 
