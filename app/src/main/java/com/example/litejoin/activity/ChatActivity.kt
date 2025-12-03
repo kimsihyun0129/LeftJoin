@@ -119,8 +119,8 @@ class ChatActivity : AppCompatActivity() {
             .addOnSuccessListener {
                 binding.etMessageInput.setText("") // 입력창 초기화
 
-                // 채팅 목록 (ChatListFragment)의 lastMessage 업데이트
-                updateChatRoomLastMessage(text)
+                // [필수] 채팅 목록 (ChatListFragment)의 lastMessage 업데이트 호출
+                updateChatRoomLastMessage(text) // ⬅️ 이 함수가 성공적으로 호출되어야 합니다.
             }
             .addOnFailureListener {
                 Toast.makeText(this, "메시지 전송 실패", Toast.LENGTH_SHORT).show()
@@ -129,11 +129,17 @@ class ChatActivity : AppCompatActivity() {
 
     // --- 채팅방 정보 업데이트 (마지막 메시지/시간) ---
     private fun updateChatRoomLastMessage(lastMessage: String) {
+        // [중요] Realtime DB의 chatRooms 노드에 데이터를 기록합니다.
         val chatRoomUpdate = mapOf(
             "lastMessage" to lastMessage,
-            "lastMessageTime" to System.currentTimeMillis()
+            "lastMessageTime" to System.currentTimeMillis(),
+            // 채팅방이 없다면 users 필드가 누락될 수 있으므로, 생성 로직을 포함합니다.
+            "users/$currentUid" to true,
+            "users/$partnerUid" to true
         )
-        // chatRooms 노드에 업데이트
-        realdb.getReference("chatRooms").child(chatRoomId).updateChildren(chatRoomUpdate)
+
+        realdb.getReference("chatRooms").child(chatRoomId).updateChildren(chatRoomUpdate) // ⬅️ updateChildren 사용
+        // updateChildren을 사용하면 chatRooms 문서가 없어도 자동으로 생성되며,
+        // 기존 필드는 유지되고 새로운 필드(lastMessage, users)가 추가/업데이트됩니다.
     }
 }

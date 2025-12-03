@@ -36,6 +36,8 @@
             android:layout_weight="1"
             android:hint="메시지 입력"
             android:maxLines="5"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
             android:inputType="textMultiLine"
             android:background="@drawable/rounded_edittext"
             android:padding="10dp"/>
