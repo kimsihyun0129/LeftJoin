@@ -104,7 +104,17 @@
         android:id="@+id/btn_write_or_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="작성하기"/>
+        android:layout_marginHorizontal="16dp"  android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"       android:text="작성하기"/>
+
+    <Button
+        android:id="@+id/btn_delete_post"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="삭제하기"
+        android:visibility="gone" style="@style/Widget.AppCompat.Button.Borderless"
+        android:textColor="@android:color/holo_red_dark"/>
 
 </LinearLayout>
