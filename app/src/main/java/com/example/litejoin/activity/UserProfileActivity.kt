@@ -26,7 +26,7 @@ class UserProfileActivity : AppCompatActivity() {
     private val firestore = FirebaseFirestore.getInstance()
     private val storage = FirebaseStorage.getInstance()
     private var selectedImageUri: Uri? = null
-    private lateinit var toolbarBinding: CustomToolbarUserInfoBinding // 툴바 바인딩 선언
+    private lateinit var toolbarBinding: CustomToolbarUserInfoBinding
 
     // 갤러리 접근 권한 요청 계약
     private val requestPermissionLauncher =
@@ -53,20 +53,15 @@ class UserProfileActivity : AppCompatActivity() {
         binding = ActivityUserProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 1. 툴바 설정 및 초기화 (가장 먼저 실행)
-        // activity_user_profile.xml에 <include id="@+id/toolbar" ...>가 있다고 가정
+        // 1. 툴바 설정 및 초기화 (onCreate 내부에서 실행하여 초기화 오류 방지)
         toolbarBinding = CustomToolbarUserInfoBinding.bind(binding.toolbar.root)
         setSupportActionBar(toolbarBinding.root)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
-        // 2. 툴바 뒤로가기 버튼 리스너 설정 (초기화 후 설정)
+        // 2. 툴바 뒤로가기 버튼 리스너 설정
         toolbarBinding.btnBack.setOnClickListener {
             onBackPressedDispatcher.onBackPressed()
         }
-
-        // [수정] 아래의 supportActionBar를 사용한 임시 처리는 커스텀 툴바 사용 시 불필요하므로 제거합니다.
-        // supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        // supportActionBar?.title = "사용자 정보 입력"
 
         // 3. 프로필 이미지 첨부 버튼 리스너
         binding.btnAttachPhoto.setOnClickListener {
@@ -78,15 +73,18 @@ class UserProfileActivity : AppCompatActivity() {
             saveUserProfile()
         }
 
-        // 5. 기존 정보 로드 (수정 시나리오)
+        // 5. 로그아웃 버튼 리스너
+        binding.btnLogout.setOnClickListener {
+            performLogout()
+        }
+
+        // 6. 기존 정보 로드 (수정 시나리오)
         loadUserProfile()
     }
 
-    // [수정] onSupportNavigateUp() 함수는 커스텀 툴바의 btnBack 리스너를 사용하므로 불필요합니다.
-    // override fun onSupportNavigateUp(): Boolean { finish(); return true }
-
     // --- 이미지 처리 로직 ---
     private fun checkStoragePermission() {
+        // Android 13 (TIRAMISU) 이상에서는 READ_MEDIA_IMAGES 권한, 이하에서는 READ_EXTERNAL_STORAGE 권한 확인
         val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.READ_MEDIA_IMAGES
         } else {
@@ -199,6 +197,40 @@ class UserProfileActivity : AppCompatActivity() {
         val intent = Intent(this, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
+        finish()
+    }
+
+    // --- 로그아웃 로직 ---
+    private fun performLogout() {
+        // 1. Firebase 로그아웃
+        auth.signOut()
+
+        Toast.makeText(this, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show()
+
+        // 2. Google 로그인 캐시 정보도 함께 지웁니다.
+        //    (Google 로그인을 사용한 경우, 다음 로그인 시 계정 선택 창이 다시 뜨도록 합니다.)
+        // *주의: GoogleSignInClient 객체가 필요합니다. LoginActivity에 있는 설정을 가져오거나 별도로 초기화해야 합니다.*
+
+        try {
+            // [수정] GoogleSignInClient를 임시로 초기화하여 signOut을 시도합니다.
+            val gso = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build()
+            val googleSignInClient = com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(this, gso)
+            googleSignInClient.signOut()
+        } catch (e: Exception) {
+            // GoogleSignInClient 초기화에 필요한 리소스가 없을 경우 (예: R.string.default_web_client_id) 예외 처리
+            // 토스트 메시지를 표시하지 않고 조용히 넘어갑니다.
+        }
+
+
+        // 3. 로그인 화면으로 이동하며, 이전 Activity 스택을 모두 지웁니다.
+        // FLAG_ACTIVITY_CLEAR_TASK와 FLAG_ACTIVITY_NEW_TASK는 로그인 화면을 새 스택의 루트로 만듭니다.
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+
+        // 현재 Activity (UserProfileActivity)를 종료
         finish()
     }
 }
