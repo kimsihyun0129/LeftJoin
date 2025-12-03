@@ -15,11 +15,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LiteJoin">
         <activity
-            android:name=".activity.PostDetailActivity"/>
-        <activity
-            android:name=".activity.PostWriteActivity"/>
-        <activity
-            android:name=".activity.UserProfileActivity"/>
+            android:name=".activity.ChatActivity"
+            android:exported="false" />
+        <activity android:name=".activity.PostDetailActivity" />
+        <activity android:name=".activity.PostWriteActivity" />
+        <activity android:name=".activity.UserProfileActivity" />
         <activity android:name=".activity.SignUpActivity" />
         <activity android:name=".activity.LoginActivity" />
         <activity

@@ -1,5 +1,3 @@
-// com.example.litejoin/activity/PostDetailActivity.kt (수정)
-
 package com.example.litejoin.activity
 
 import android.content.Intent
@@ -123,13 +121,23 @@ class PostDetailActivity : AppCompatActivity() {
 
     // --- 채팅 시작 임시 로직 (10단계에서 완성) ---
     private fun startChatWithUser(partnerUid: String, partnerNickname: String) {
-        if (currentUid == partnerUid) {
-            // 이 경로는 PostListFragment에서 이미 차단되어야 하지만, 혹시 모를 상황 대비
+        val currentUid = auth.currentUser?.uid // currentUid를 다시 가져옵니다.
+
+        if (currentUid == null || currentUid == partnerUid) {
+            // 이미 PostListFragment에서 차단되었어야 하지만, 안전 장치 유지
             Toast.makeText(this, "본인과의 채팅은 불가능합니다.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        Toast.makeText(this, "$partnerNickname 님과 채팅을 시작합니다. (다음 단계 구현 예정)", Toast.LENGTH_SHORT).show()
-        // TODO: ChatActivity로 이동하는 실제 로직 추가 (채팅방 ID 생성 또는 조회)
+        // ChatActivity로 이동
+        val intent = Intent(this, ChatActivity::class.java)
+
+        // 상대방의 UID를 Intent에 PARTNER_UID 키로 전달합니다.
+        intent.putExtra("PARTNER_UID", partnerUid)
+
+        // [선택 사항] 툴바에 표시할 상대방 닉네임을 미리 전달하여 DB 조회를 줄일 수 있습니다.
+        // intent.putExtra("PARTNER_NICKNAME", partnerNickname)
+
+        startActivity(intent)
     }
 }

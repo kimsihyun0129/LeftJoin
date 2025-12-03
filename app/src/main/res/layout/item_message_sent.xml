@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingVertical="4dp"
+    android:layout_marginBottom="2dp">
+
+    <TextView
+        android:id="@+id/tv_time_sent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginEnd="4dp"
+        app:layout_constraintEnd_toStartOf="@id/tv_message_body"
+        app:layout_constraintBottom_toBottomOf="@id/tv_message_body"
+        tools:text="오후 1:11"/>
+
+    <TextView
+        android:id="@+id/tv_message_body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="250dp"
+        android:background="@drawable/bubble_sent"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp"
+        android:textColor="@android:color/white"
+        android:elevation="1dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="네, 알겠습니다. 그럼 다음 주 월요일에 만나요!"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
