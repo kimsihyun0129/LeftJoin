@@ -3,6 +3,7 @@
 package com.example.litejoin.adapter
 
 import android.view.LayoutInflater
+import android.view.View // View import 추가
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -65,6 +66,14 @@ class ChatRoomAdapter(private val itemClickListener: (ChatRoom, String) -> Unit)
             // 4. 메시지 및 시간 표시
             binding.tvLastMessage.text = chatRoom.lastMessage
             binding.tvLastTime.text = timeFormat.format(Date(chatRoom.lastMessageTime))
+
+            // ⬅️ [핵심 수정] 게시글 제목 표시 로직 추가
+            if (!chatRoom.postTitle.isNullOrEmpty()) {
+                binding.tvPostTitle.visibility = View.VISIBLE
+                binding.tvPostTitle.text = "/ ${chatRoom.postTitle}"
+            } else {
+                binding.tvPostTitle.visibility = View.GONE
+            }
         }
 
         private fun loadPartnerInfo(uid: String, callback: (User?) -> Unit) {
@@ -85,7 +94,9 @@ class ChatRoomDiffCallback : DiffUtil.ItemCallback<ChatRoom>() {
     }
 
     override fun areContentsTheSame(oldItem: ChatRoom, newItem: ChatRoom): Boolean {
-        // 마지막 메시지와 시간만 비교하여 변경 여부를 판단
-        return oldItem.lastMessage == newItem.lastMessage && oldItem.lastMessageTime == newItem.lastMessageTime
+        // 마지막 메시지와 시간, 그리고 게시글 제목까지 비교하여 변경 여부를 판단해야 합니다.
+        return oldItem.lastMessage == newItem.lastMessage &&
+                oldItem.lastMessageTime == newItem.lastMessageTime &&
+                oldItem.postTitle == newItem.postTitle // ⬅️ postTitle 비교 추가
     }
 }

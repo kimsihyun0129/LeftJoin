@@ -134,6 +134,7 @@ class PostDetailActivity : AppCompatActivity() {
 
         // 상대방의 UID를 Intent에 PARTNER_UID 키로 전달합니다.
         intent.putExtra("PARTNER_UID", partnerUid)
+        intent.putExtra("POST_TITLE", currentPost?.title)
 
         // [선택 사항] 툴바에 표시할 상대방 닉네임을 미리 전달하여 DB 조회를 줄일 수 있습니다.
         // intent.putExtra("PARTNER_NICKNAME", partnerNickname)

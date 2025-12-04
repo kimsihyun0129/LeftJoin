@@ -1,8 +1,8 @@
 package com.example.litejoin.activity
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager // WindowManager import 추가
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.litejoin.adapter.MessageAdapter
@@ -32,16 +32,13 @@ class ChatActivity : AppCompatActivity() {
     private val currentUid: String
         get() = auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
 
+    private var postTitle: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ⬅️ [추가] 키보드 조정 모드를 강제로 적용하여 시스템 UI와의 충돌을 방지합니다.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.setDecorFitsSystemWindows(false)
-        } else {
-            @Suppress("DEPRECATION")
-            window.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        }
+        // ⬅️ [수정] 키보드 조정 모드를 강제로 적용하는 코드는 제거합니다.
+        // 이 기능은 AndroidManifest.xml의 adjustPan 설정으로 처리합니다.
 
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -51,6 +48,8 @@ class ChatActivity : AppCompatActivity() {
             Toast.makeText(this, "채팅 상대방 정보가 없습니다.", Toast.LENGTH_SHORT).run { finish() }
             return
         }
+
+        postTitle = intent.getStringExtra("POST_TITLE")
 
         // 채팅방 ID 생성
         chatRoomId = generateChatRoomId(currentUid, partnerUid)
@@ -104,7 +103,7 @@ class ChatActivity : AppCompatActivity() {
                     // 최신 메시지로 스크롤
                     binding.rvMessages.scrollToPosition(messageAdapter.itemCount - 1)
 
-                    // TODO: 채팅 목록 (ChatListFragment) 업데이트 로직 구현 필요
+                    // ⬅️ [TODO] 채팅 목록 갱신은 ChatListFragment의 ValueEventListener가 담당하므로, 별도 로직 불필요.
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -128,9 +127,7 @@ class ChatActivity : AppCompatActivity() {
         messageRef.setValue(message)
             .addOnSuccessListener {
                 binding.etMessageInput.setText("") // 입력창 초기화
-
-                // [필수] 채팅 목록 (ChatListFragment)의 lastMessage 업데이트 호출
-                updateChatRoomLastMessage(text) // ⬅️ 이 함수가 성공적으로 호출되어야 합니다.
+                updateChatRoomLastMessage(text) // 채팅방 정보 업데이트 호출
             }
             .addOnFailureListener {
                 Toast.makeText(this, "메시지 전송 실패", Toast.LENGTH_SHORT).show()
@@ -139,17 +136,18 @@ class ChatActivity : AppCompatActivity() {
 
     // --- 채팅방 정보 업데이트 (마지막 메시지/시간) ---
     private fun updateChatRoomLastMessage(lastMessage: String) {
-        // [중요] Realtime DB의 chatRooms 노드에 데이터를 기록합니다.
-        val chatRoomUpdate = mapOf(
+        // ⬅️ [수정] postTitle을 안전하게 추가하기 위해 mutableMapOf 사용
+        val chatRoomUpdate = mutableMapOf<String, Any>(
             "lastMessage" to lastMessage,
             "lastMessageTime" to System.currentTimeMillis(),
-            // 채팅방이 없다면 users 필드가 누락될 수 있으므로, 생성 로직을 포함합니다.
             "users/$currentUid" to true,
             "users/$partnerUid" to true
         )
 
-        realdb.getReference("chatRooms").child(chatRoomId).updateChildren(chatRoomUpdate) // ⬅️ updateChildren 사용
-        // updateChildren을 사용하면 chatRooms 문서가 없어도 자동으로 생성되며,
-        // 기존 필드는 유지되고 새로운 필드(lastMessage, users)가 추가/업데이트됩니다.
+        postTitle?.let { title ->
+            chatRoomUpdate["postTitle"] = title
+        }
+
+        realdb.getReference("chatRooms").child(chatRoomId).updateChildren(chatRoomUpdate)
     }
 }
