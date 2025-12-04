@@ -6,7 +6,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.litejoin.R
 import com.example.litejoin.databinding.ActivityMainBinding
-import com.example.litejoin.databinding.CustomToolbarBinding
+import com.example.litejoin.databinding.CustomToolbarMainBinding
 import com.example.litejoin.fragment.ChatListFragment
 import com.example.litejoin.fragment.PostListFragment
 import com.google.firebase.auth.FirebaseAuth
@@ -15,7 +15,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var toolbarBinding: CustomToolbarBinding
+    private lateinit var toolbarBinding: CustomToolbarMainBinding
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
 
@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // 1. 커스텀 툴바 설정
-        toolbarBinding = CustomToolbarBinding.bind(binding.toolbar.root)
+        toolbarBinding = CustomToolbarMainBinding.bind(binding.toolbar.root)
         setSupportActionBar(toolbarBinding.root)
         supportActionBar?.setDisplayShowTitleEnabled(false) // 기본 타이틀 숨김
         setupToolbar()
@@ -44,10 +44,6 @@ class MainActivity : AppCompatActivity() {
 
     // --- 툴바 로직 ---
     private fun setupToolbar() {
-        // 메인 화면에서는 뒤로가기 버튼을 비활성화하고 숨김 처리 (기능 없음)
-        toolbarBinding.btnBack.visibility = android.view.View.GONE // ⬅️ 숨김 처리
-        toolbarBinding.btnBack.setOnClickListener(null) // ⬅️ 리스너 제거
-
         // 오른쪽 사용자 정보 레이아웃 클릭 시 프로필 화면으로 이동
         toolbarBinding.layoutUserProfileTrigger.setOnClickListener {
             val intent = Intent(this, UserProfileActivity::class.java)
