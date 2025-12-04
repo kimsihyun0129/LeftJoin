@@ -72,4 +72,6 @@ dependencies {
     // Glide (이미지 로딩 라이브러리)
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    // 새로고침 라이브러리
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }
