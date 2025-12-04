@@ -52,12 +52,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:hint="최대 모집 인원">
+                android:hint="모집 인원">
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_max_members"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="number" />
+                android:id="@+id/et_recruitment_count" android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout

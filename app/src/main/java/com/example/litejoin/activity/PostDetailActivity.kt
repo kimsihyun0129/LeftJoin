@@ -101,7 +101,7 @@ class PostDetailActivity : AppCompatActivity() {
 
         binding.tvTitle.text = "제목: ${post.title}"
         binding.tvShortDescription.text = "한줄 소개: ${post.shortDescription}"
-        binding.tvMembers.text = "인원: ${post.currentMembers} / ${post.maxMembers}명"
+        binding.tvMembers.text = "모집 인원: ${post.recruitmentCount}명"
         binding.tvLocation.text = "장소: ${post.location}"
         binding.tvEstimatedCost.text = "예상 비용: ${currencyFormat.format(post.estimatedCost)}원"
         binding.tvContent.text = post.content

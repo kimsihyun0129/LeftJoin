@@ -82,7 +82,7 @@ class PostWriteActivity : AppCompatActivity() {
                 post?.let {
                     binding.etTitle.setText(it.title)
                     binding.etShortDescription.setText(it.shortDescription)
-                    binding.etMaxMembers.setText(it.maxMembers.toString())
+                    binding.etRecruitmentCount.setText(it.recruitmentCount.toString())
                     binding.etLocation.setText(it.location)
                     binding.etEstimatedCost.setText(it.estimatedCost.toString())
                     binding.etContent.setText(it.content)
@@ -99,7 +99,7 @@ class PostWriteActivity : AppCompatActivity() {
         val title = binding.etTitle.text.toString().trim()
         val shortDescription = binding.etShortDescription.text.toString().trim()
         val location = binding.etLocation.text.toString().trim()
-        val maxMembersStr = binding.etMaxMembers.text.toString().trim()
+        val recruitmentCountStr = binding.etRecruitmentCount.text.toString().trim()
         val estimatedCostStr = binding.etEstimatedCost.text.toString().trim()
 
         if (uid == null || authorNickname == null) {
@@ -108,16 +108,16 @@ class PostWriteActivity : AppCompatActivity() {
         }
 
         if (title.isEmpty() || shortDescription.isEmpty() || location.isEmpty() ||
-            maxMembersStr.isEmpty() || estimatedCostStr.isEmpty()) {
+            recruitmentCountStr.isEmpty() || estimatedCostStr.isEmpty()) {
 
             Toast.makeText(this, "제목, 한줄 소개, 인원, 장소, 예상 비용은 모두 필수 입력 항목입니다.", Toast.LENGTH_LONG).show()
             return
         }
 
-        val maxMembers = maxMembersStr.toIntOrNull()
+        val recruitmentCount = recruitmentCountStr.toIntOrNull()
         val estimatedCost = estimatedCostStr.toIntOrNull()
 
-        if (maxMembers == null || maxMembers <= 0) {
+        if (recruitmentCount == null || recruitmentCount <= 0) { // ⬅️ 모집 인원 확인
             Toast.makeText(this, "모집 인원은 1명 이상의 숫자로 입력해야 합니다.", Toast.LENGTH_LONG).show()
             return
         }
@@ -126,18 +126,17 @@ class PostWriteActivity : AppCompatActivity() {
             return
         }
 
-        savePostToFirestore(uid, maxMembers, estimatedCost)
+        savePostToFirestore(uid, recruitmentCount, estimatedCost)
     }
 
-    private fun savePostToFirestore(uid: String, maxMembers: Int, estimatedCost: Int) {
+    private fun savePostToFirestore(uid: String, recruitmentCount: Int, estimatedCost: Int) {
         val newPost = Post(
             postId = postId ?: firestore.collection("posts").document().id,
             authorUid = uid,
             authorNickname = authorNickname!!,
             title = binding.etTitle.text.toString().trim(),
             shortDescription = binding.etShortDescription.text.toString().trim(),
-            maxMembers = maxMembers,
-            currentMembers = if (postId == null) 1 else maxMembers,
+            recruitmentCount = recruitmentCount,
             location = binding.etLocation.text.toString().trim(),
             estimatedCost = estimatedCost,
             content = binding.etContent.text.toString().trim()

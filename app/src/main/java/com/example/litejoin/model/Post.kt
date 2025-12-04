@@ -9,8 +9,7 @@ data class Post(
     val authorNickname: String = "", // 작성자 닉네임
     val title: String = "", // 게시글 제목
     val shortDescription: String = "", // 한줄 소개
-    val maxMembers: Int = 1, // 최대 모집 인원
-    val currentMembers: Int = 1, // 현재 모집된 인원 (기본 1: 작성자 자신)
+    val recruitmentCount: Int = 1, // 모집 인원
     val estimatedCost: Int = 0, // 예상 비용
     val location: String = "", // 만남/활동 장소 (추가된 필드)
     val content: String = "", // 추가 사항 (본문 내용)
