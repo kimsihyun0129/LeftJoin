@@ -98,13 +98,14 @@
             android:id="@+id/btn_save"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="저장"/>
+            android:text="저장하기"
+            app:backgroundTint="@color/colorPrimary"/>
         <Button
             android:id="@+id/btn_logout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="로그아웃"
-            style="@style/Widget.AppCompat.Button.Borderless" android:textColor="@android:color/holo_red_dark"/>
+            style="@style/Widget.AppCompat.Button.Borderless" android:textColor="@color/colorError"/>
     </LinearLayout>
     </ScrollView>
 </LinearLayout>
