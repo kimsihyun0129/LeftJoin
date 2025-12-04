@@ -17,6 +17,8 @@ import com.google.firebase.storage.FirebaseStorage
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.bumptech.glide.Glide
+import com.example.litejoin.model.User
 
 class MessageAdapter(private val currentUid: String) :
     ListAdapter<Any, RecyclerView.ViewHolder>(MessageDiffCallback()) {
@@ -66,30 +68,43 @@ class MessageAdapter(private val currentUid: String) :
     // 2. 상대방이 보낸 메시지
     inner class ReceivedMessageViewHolder(private val binding: ItemMessageReceivedBinding) :
         RecyclerView.ViewHolder(binding.root) {
+
         fun bind(message: Message) {
             binding.tvMessageBody.text = message.text
             binding.tvTimeReceived.text = timeFormat.format(Date(message.timestamp))
 
-            // 상대방 닉네임과 프로필 이미지 로딩 (Firestore/Storage 필요)
+            // 상대방 닉네임과 프로필 이미지 로딩 시작
             loadPartnerInfo(message.senderUid)
         }
 
-        // 상대방 정보 로딩 (데이터 중복 로드를 피하기 위해 캐싱 로직이 필요하지만, 여기서는 간소화)
+        // 상대방 정보 로딩 및 바인딩
         private fun loadPartnerInfo(uid: String) {
+            // Firestore에서 사용자 정보 문서 조회
             firestore.collection("users").document(uid).get()
                 .addOnSuccessListener { document ->
-                    val nickname = document.getString("nickname") ?: "알 수 없는 사용자"
-                    val profileUrl = document.getString("profileImageUrl")
+                    val user = document.toObject(User::class.java)
+                    user?.let {
+                        // 닉네임 설정
+                        binding.tvPartnerNickname.text = it.nickname ?: "알 수 없는 사용자"
 
-                    binding.tvPartnerNickname.text = nickname
-
-                    if (!profileUrl.isNullOrEmpty()) {
-                        // Glide를 사용하여 프로필 이미지 로드
-                        // TODO: Glide 라이브러리가 필요합니다.
-                        // Glide.with(binding.root.context).load(profileUrl).into(binding.ivPartnerProfile)
-                    } else {
-                        binding.ivPartnerProfile.setImageResource(R.drawable.ic_default_profile)
+                        // ⬅️ [핵심] 프로필 이미지 로드
+                        if (!it.profileImageUrl.isNullOrEmpty()) {
+                            // Glide를 사용하여 CircleImageView에 이미지 로드
+                            Glide.with(binding.root.context)
+                                .load(it.profileImageUrl)
+                                .placeholder(R.drawable.ic_default_profile) // 로딩 중 기본 이미지
+                                .error(R.drawable.ic_default_profile)      // 로드 실패 시 기본 이미지
+                                .into(binding.ivPartnerProfile) // iv_partner_profile은 item_message_received.xml에 정의된 ID입니다.
+                        } else {
+                            // 프로필 URL이 없으면 기본 이미지 설정
+                            binding.ivPartnerProfile.setImageResource(R.drawable.ic_default_profile)
+                        }
                     }
+                }
+                .addOnFailureListener {
+                    // 로드 실패 시 기본 이미지 및 닉네임 설정
+                    binding.tvPartnerNickname.text = "오류"
+                    binding.ivPartnerProfile.setImageResource(R.drawable.ic_default_profile)
                 }
         }
     }
