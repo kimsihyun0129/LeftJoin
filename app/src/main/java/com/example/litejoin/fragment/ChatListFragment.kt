@@ -10,6 +10,8 @@ import androidx.fragment.app.Fragment
 import com.example.litejoin.activity.ChatActivity
 import com.example.litejoin.adapter.ChatRoomAdapter
 import com.example.litejoin.databinding.FragmentChatListBinding
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.litejoin.model.ChatRoom
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -54,6 +56,14 @@ class ChatListFragment : Fragment() {
         }
 
         binding.rvChatRooms.adapter = chatRoomAdapter
+
+        binding.rvChatRooms.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = chatRoomAdapter
+
+            // ⬅️ [추가] 일관된 구분선 추가
+            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+        }
     }
 
     private fun loadChatRooms() {
