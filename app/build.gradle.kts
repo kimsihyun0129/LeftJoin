@@ -65,7 +65,9 @@ dependencies {
     implementation("com.google.firebase:firebase-database-ktx")
     // 4. Firebase Storage (이미지 저장)
     implementation("com.google.firebase:firebase-storage-ktx")
-    // 5. 기타 유용한 라이브러리 (코루틴 지원)
+    // 5. Firebase Messaging (푸시 알림)
+    implementation("com.google.firebase:firebase-messaging-ktx")
+    // 6. 기타 유용한 라이브러리 (코루틴 지원)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     // 서클 이미지 뷰 라이브러리
     implementation("de.hdodenhof:circleimageview:3.1.0")
