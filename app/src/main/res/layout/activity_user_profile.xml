@@ -74,6 +74,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
+            android:hint="학교">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_school" android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
             android:hint="학번">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_student_id"
@@ -82,17 +93,7 @@
                 android:inputType="number"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="40dp"
-            android:hint="전화번호">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_phone_number"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="phone"/>
-        </com.google.android.material.textfield.TextInputLayout>
+
 
         <Button
             android:id="@+id/btn_save"

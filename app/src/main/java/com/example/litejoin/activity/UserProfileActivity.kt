@@ -15,8 +15,8 @@ import com.bumptech.glide.Glide
 import com.example.litejoin.databinding.ActivityUserProfileBinding
 import com.example.litejoin.databinding.CustomToolbarUserInfoBinding
 import com.example.litejoin.model.User
-import com.google.android.gms.auth.api.signin.GoogleSignIn // GoogleSignIn import
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions // GoogleSignInOptions import
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -52,7 +52,6 @@ class UserProfileActivity : AppCompatActivity() {
 
         // 1. 툴바 설정 및 초기화
         binding.toolbar?.let {
-            // activity_user_profile.xml의 include ID가 'toolbar'라고 가정
             toolbarBinding = CustomToolbarUserInfoBinding.bind(it.root)
             setSupportActionBar(toolbarBinding.root)
             supportActionBar?.setDisplayShowTitleEnabled(false)
@@ -110,7 +109,7 @@ class UserProfileActivity : AppCompatActivity() {
         pickImageLauncher.launch(intent)
     }
 
-    // --- 데이터 로드 로직 (생략) ---
+    // --- 데이터 로드 로직 (순서 수정) ---
     private fun loadUserProfile() {
         val uid = auth.currentUser?.uid ?: return
 
@@ -120,8 +119,9 @@ class UserProfileActivity : AppCompatActivity() {
                 user?.let {
                     binding.etNickname.setText(it.nickname)
                     binding.etName.setText(it.name)
-                    binding.etStudentId.setText(it.studentId)
-                    binding.etPhoneNumber.setText(it.phoneNumber)
+
+                    binding.etSchool.setText(it.school) // ⬅️ [수정] 학교 먼저 로드
+                    binding.etStudentId.setText(it.studentId) // ⬅️ [수정] 학번 다음 로드
 
                     it.profileImageUrl?.let { url ->
                         Glide.with(this).load(url).into(binding.ivProfile)
@@ -130,34 +130,38 @@ class UserProfileActivity : AppCompatActivity() {
             }
     }
 
-    // --- 데이터 저장 로직 (생략) ---
+    // --- 데이터 저장 로직 (순서 수정) ---
     private fun saveUserProfile() {
         val uid = auth.currentUser?.uid
         val nickname = binding.etNickname.text.toString().trim()
         val name = binding.etName.text.toString().trim()
-        val studentId = binding.etStudentId.text.toString().trim()
-        val phoneNumber = binding.etPhoneNumber.text.toString().trim()
+
+        val school = binding.etSchool.text.toString().trim() // ⬅️ [수정] 학교 먼저 가져오기
+        val studentId = binding.etStudentId.text.toString().trim() // ⬅️ [수정] 학번 다음 가져오기
 
         if (uid == null || nickname.isEmpty()) {
             Toast.makeText(this, "닉네임은 필수 입력 항목입니다.", Toast.LENGTH_SHORT).show()
             return
         }
 
+        // 1. 이미지 업로드 (선택 사항)
         if (selectedImageUri != null) {
-            uploadImageAndSaveProfile(uid, nickname, name, studentId, phoneNumber)
+            uploadImageAndSaveProfile(uid, nickname, name, studentId, school, null)
         } else {
-            saveProfileToFirestore(uid, nickname, name, studentId, phoneNumber, null)
+            // 2. 이미지 없이 프로필 정보만 저장
+            saveProfileToFirestore(uid, nickname, name, studentId, school, null)
         }
     }
 
-    private fun uploadImageAndSaveProfile(uid: String, nickname: String, name: String, studentId: String, phoneNumber: String) {
+    private fun uploadImageAndSaveProfile(uid: String, nickname: String, name: String, studentId: String, school: String, profileImageUrl: String?) {
         val storageRef = storage.reference.child("profiles/$uid.jpg")
 
         selectedImageUri?.let { uri ->
             storageRef.putFile(uri)
                 .addOnSuccessListener {
                     storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                        saveProfileToFirestore(uid, nickname, name, studentId, phoneNumber, downloadUri.toString())
+                        // 3. Firestore에 URL과 함께 프로필 정보 저장
+                        saveProfileToFirestore(uid, nickname, name, studentId, school, downloadUri.toString())
                     }
                 }
                 .addOnFailureListener {
@@ -166,13 +170,13 @@ class UserProfileActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveProfileToFirestore(uid: String, nickname: String, name: String, studentId: String, phoneNumber: String, profileImageUrl: String?) {
+    private fun saveProfileToFirestore(uid: String, nickname: String, name: String, studentId: String, school: String, profileImageUrl: String?) {
         val userMap = User(
             uid = uid,
             nickname = nickname,
             name = if (name.isEmpty()) null else name,
             studentId = if (studentId.isEmpty()) null else studentId,
-            phoneNumber = if (phoneNumber.isEmpty()) null else phoneNumber,
+            school = if (school.isEmpty()) null else school, // ⬅️ [수정] 학교 저장
             profileImageUrl = profileImageUrl
         )
 
@@ -193,12 +197,10 @@ class UserProfileActivity : AppCompatActivity() {
         finish()
     }
 
-    // --- 로그아웃 로직 (안정화된 버전) ---
+    // --- 로그아웃 로직 (유지) ---
     private fun performLogout() {
-        // 1. Firebase 로그아웃
         auth.signOut()
 
-        // 2. ⬅️ [핵심] Google Sign-In 세션 해제 시도 (크래시 방지를 위해 try-catch로 감쌉니다)
         try {
             val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -206,12 +208,11 @@ class UserProfileActivity : AppCompatActivity() {
             val googleSignInClient = GoogleSignIn.getClient(this, gso)
             googleSignInClient.signOut()
         } catch (e: Exception) {
-            // Google 관련 초기화 오류 시 무시하고 Firebase 로그아웃만 반영합니다.
+            // Google 관련 초기화 오류 시 무시
         }
 
         Toast.makeText(this, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show()
 
-        // 3. 로그인 화면으로 이동하며, 이전 Activity 스택을 모두 지웁니다.
         val intent = Intent(this, LoginActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
