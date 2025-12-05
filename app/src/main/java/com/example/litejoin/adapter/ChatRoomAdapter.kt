@@ -1,5 +1,6 @@
 package com.example.litejoin.adapter
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +26,7 @@ class ChatRoomAdapter(private val itemClickListener: (ChatRoom, String) -> Unit)
     private val currentUid = auth.currentUser?.uid
     private val timeFormat = SimpleDateFormat("a h:mm", Locale.getDefault())
 
-    // CircleImageView의 테두리 너비를 설정하는 DP 값 (안 읽었을 때)
+    // CircleImageView의 테두리 너비를 설정하는 DP 값 (안 읽었을 때 표시)
     private val UNREAD_BORDER_WIDTH_DP = 4f
     private var density: Float = 1f // DPI 밀도 값
 
@@ -47,6 +48,11 @@ class ChatRoomAdapter(private val itemClickListener: (ChatRoom, String) -> Unit)
             val partnerUid = chatRoom.users.keys.firstOrNull { it != currentUid }
 
             if (partnerUid != null) {
+                // ⬅️ [수정] 클릭 리스너를 비동기 호출 밖으로 이동하여 즉시 설정 (RecycledView 문제 해결)
+                binding.root.setOnClickListener {
+                    itemClickListener(chatRoom, partnerUid)
+                }
+
                 // 2. 상대방 정보 로드 (닉네임, 프로필)
                 loadPartnerInfo(partnerUid) { user ->
                     if (user != null) {
@@ -58,13 +64,10 @@ class ChatRoomAdapter(private val itemClickListener: (ChatRoom, String) -> Unit)
                         } else {
                             binding.ivProfile.setImageResource(R.drawable.ic_default_profile)
                         }
-
-                        // 3. 아이템 클릭 리스너 설정
-                        binding.root.setOnClickListener {
-                            itemClickListener(chatRoom, partnerUid)
-                        }
                     }
                 }
+            } else {
+                binding.root.setOnClickListener(null)
             }
 
             // 4. 메시지 및 시간 표시
@@ -83,20 +86,20 @@ class ChatRoomAdapter(private val itemClickListener: (ChatRoom, String) -> Unit)
             val lastReadTime = chatRoom.lastRead[currentUid] ?: 0L
             val lastMessageTime = chatRoom.lastMessageTime
 
-            // lastReadTime이 lastMessageTime보다 작을 경우 (즉, 메시지가 읽음 시간보다 최신인 경우) 안 읽음
-            val isUnread = lastMessageTime > lastReadTime
+            // 안 읽음 조건: "사용자가 채팅방에서 나온 시간(lastReadTime)이 마지막 메시지 전송 시간(lastMessageTime)보다 앞인 경우"
+            // 즉, lastReadTime < lastMessageTime
+            val isUnread = lastReadTime < lastMessageTime
 
-            // 1. 테두리 너비 설정
             if (isUnread) {
-                // 읽지 않았으면 테두리 표시 (4dp)
+                // 안 읽음: 테두리 표시 (4dp), 텍스트 굵게
                 binding.ivProfile.setBorderWidth((UNREAD_BORDER_WIDTH_DP * density).toInt())
-
+                
                 // 닉네임과 마지막 메시지를 굵게 표시
                 binding.tvNickname.setTypeface(null, android.graphics.Typeface.BOLD)
                 binding.tvLastMessage.setTypeface(null, android.graphics.Typeface.BOLD)
 
             } else {
-                // ⬅️ [수정] 읽었으면 테두리 숨김 (0dp)
+                // 읽음: 테두리 없음(0dp), 텍스트 보통
                 binding.ivProfile.setBorderWidth(0)
 
                 // 닉네임과 마지막 메시지를 보통 굵기로 표시
