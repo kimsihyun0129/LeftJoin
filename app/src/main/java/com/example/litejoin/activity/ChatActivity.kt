@@ -1,8 +1,6 @@
 package com.example.litejoin.activity
 
-import android.content.Intent
 import android.os.Bundle
-import android.view.WindowManager // WindowManager import 추가
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.litejoin.adapter.MessageAdapter
@@ -37,9 +35,6 @@ class ChatActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ⬅️ [수정] 키보드 조정 모드를 강제로 적용하는 코드는 제거합니다.
-        // 이 기능은 AndroidManifest.xml의 adjustPan 설정으로 처리합니다.
-
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -60,6 +55,9 @@ class ChatActivity : AppCompatActivity() {
         binding.btnSend.setOnClickListener {
             sendMessage()
         }
+
+        // ⬅️ [중요] Activity 진입 시 읽음 처리
+        markChatRoomAsRead()
     }
 
     private fun setupToolbar() {
@@ -87,7 +85,7 @@ class ChatActivity : AppCompatActivity() {
         binding.rvMessages.adapter = messageAdapter
 
         val layoutManager = binding.rvMessages.layoutManager as androidx.recyclerview.widget.LinearLayoutManager
-        layoutManager.stackFromEnd = true // 메시지를 아래에서 위로 쌓기
+        layoutManager.stackFromEnd = true
 
         realdb.getReference("messages").child(chatRoomId)
             .addValueEventListener(object : ValueEventListener {
@@ -97,13 +95,8 @@ class ChatActivity : AppCompatActivity() {
                         data.getValue(Message::class.java)?.let { messages.add(it) }
                     }
 
-                    // 날짜 헤더를 포함하여 리스트 업데이트
                     messageAdapter.submitListWithHeaders(messages)
-
-                    // 최신 메시지로 스크롤
                     binding.rvMessages.scrollToPosition(messageAdapter.itemCount - 1)
-
-                    // ⬅️ [TODO] 채팅 목록 갱신은 ChatListFragment의 ValueEventListener가 담당하므로, 별도 로직 불필요.
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -126,17 +119,19 @@ class ChatActivity : AppCompatActivity() {
 
         messageRef.setValue(message)
             .addOnSuccessListener {
-                binding.etMessageInput.setText("") // 입력창 초기화
-                updateChatRoomLastMessage(text) // 채팅방 정보 업데이트 호출
+                binding.etMessageInput.setText("")
+                updateChatRoomLastMessage(text)
+
+                // ⬅️ [수정] 메시지를 보내는 순간 내가 읽음 처리
+                markChatRoomAsRead()
             }
             .addOnFailureListener {
                 Toast.makeText(this, "메시지 전송 실패", Toast.LENGTH_SHORT).show()
             }
     }
 
-    // --- 채팅방 정보 업데이트 (마지막 메시지/시간) ---
+    // --- 채팅방 정보 업데이트 (마지막 메시지/시간/제목) ---
     private fun updateChatRoomLastMessage(lastMessage: String) {
-        // ⬅️ [수정] postTitle을 안전하게 추가하기 위해 mutableMapOf 사용
         val chatRoomUpdate = mutableMapOf<String, Any>(
             "lastMessage" to lastMessage,
             "lastMessageTime" to System.currentTimeMillis(),
@@ -149,5 +144,21 @@ class ChatActivity : AppCompatActivity() {
         }
 
         realdb.getReference("chatRooms").child(chatRoomId).updateChildren(chatRoomUpdate)
+    }
+
+    // --- 채팅방 읽음 처리 로직 ---
+    private fun markChatRoomAsRead() {
+        val readTime = System.currentTimeMillis()
+
+        // Realtime DB의 chatRooms/{chatRoomId}/lastRead/{currentUid}에 현재 시간 저장
+        realdb.getReference("chatRooms")
+            .child(chatRoomId)
+            .child("lastRead")
+            .child(currentUid)
+            // ⬅️ [중요] 필드 경로를 정확하게 lastRead/UID로 지정
+            .setValue(readTime)
+            .addOnFailureListener {
+                // 읽음 처리 실패 시 무시
+            }
     }
 }
