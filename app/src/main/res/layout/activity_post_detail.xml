@@ -37,6 +37,7 @@
             <TextView
                 style="@style/TextAppearance.AppCompat.Subhead"
                 android:id="@+id/tv_short_description"
+                android:textSize="20sp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
@@ -50,6 +51,7 @@
 
             <TextView
                 android:id="@+id/tv_members"
+                android:textSize="20sp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingVertical="4dp"
@@ -58,12 +60,14 @@
             <TextView
                 android:id="@+id/tv_location"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="41dp"
                 android:paddingVertical="4dp"
-                tools:text="장소: 4층 스터디룸"/>
+                android:textSize="20sp"
+                tools:text="장소: 4층 스터디룸" />
 
             <TextView
                 android:id="@+id/tv_estimated_cost"
+                android:textSize="20sp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingVertical="4dp"
@@ -80,7 +84,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="추가 사항"
-                android:textSize="16sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp"/>
 
@@ -88,6 +92,7 @@
                 android:id="@+id/tv_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textSize="18sp"
                 android:padding="8dp"
                 android:background="#F5F5F5"
                 android:minLines="5"
