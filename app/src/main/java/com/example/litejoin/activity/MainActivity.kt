@@ -62,6 +62,24 @@ class MainActivity : AppCompatActivity() {
         
         // 4. 알림 권한 요청 및 FCM 토큰 갱신
         askNotificationPermission()
+        
+        // 5. 알림으로 진입한 경우 처리 (백그라운드 알림 클릭 시)
+        checkNotificationIntent(intent)
+    }
+    
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        // 액티비티가 이미 실행 중일 때 인텐트를 받을 경우 처리
+        checkNotificationIntent(intent)
+    }
+
+    private fun checkNotificationIntent(intent: Intent?) {
+        val partnerUid = intent?.getStringExtra("partnerUid")
+        if (partnerUid != null) {
+            val chatIntent = Intent(this, ChatActivity::class.java)
+            chatIntent.putExtra("PARTNER_UID", partnerUid)
+            startActivity(chatIntent)
+        }
     }
 
     // --- 툴바 로직 ---

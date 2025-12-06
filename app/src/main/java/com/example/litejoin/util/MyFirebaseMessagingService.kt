@@ -3,12 +3,14 @@ package com.example.litejoin.util
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.TaskStackBuilder
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.litejoin.R
+import com.example.litejoin.activity.ChatActivity
 import com.example.litejoin.activity.MainActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -18,20 +20,14 @@ import com.google.firebase.messaging.RemoteMessage
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        // 데이터 메시지가 포함되어 있는지 확인
-        if (remoteMessage.data.isNotEmpty()) {
-            Log.d(TAG, "Message data payload: ${remoteMessage.data}")
-            sendNotification(
-                remoteMessage.data["title"] ?: "새 메시지",
-                remoteMessage.data["body"] ?: "내용 없음"
-            )
-        }
+        val data = remoteMessage.data
+        val notification = remoteMessage.notification
 
-        // 알림 메시지가 포함되어 있는지 확인
-        remoteMessage.notification?.let {
-            Log.d(TAG, "Message Notification Body: ${it.body}")
-            sendNotification(it.title ?: "LiteJoin", it.body ?: "")
-        }
+        // 알림 제목과 내용은 notification 필드 우선, 없으면 data 필드 사용
+        val title = notification?.title ?: data["title"] ?: "알림"
+        val body = notification?.body ?: data["body"] ?: "새 메시지가 도착했습니다."
+
+        sendNotification(title, body, data)
     }
 
     override fun onNewToken(token: String) {
@@ -49,17 +45,37 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .addOnFailureListener { e -> Log.w(TAG, "Error saving token", e) }
     }
 
-    private fun sendNotification(title: String, messageBody: String) {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0 /* Request code */, intent,
-            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
-        )
+    private fun sendNotification(title: String, messageBody: String, data: Map<String, String>) {
+        val partnerUid = data["partnerUid"]
+        val pendingIntent: PendingIntent
+
+        if (partnerUid != null) {
+            // 채팅방으로 바로 이동 (MainActivity -> ChatActivity 스택 생성)
+            val mainIntent = Intent(this, MainActivity::class.java)
+            val chatIntent = Intent(this, ChatActivity::class.java)
+            chatIntent.putExtra("PARTNER_UID", partnerUid)
+
+            val stackBuilder = TaskStackBuilder.create(this)
+            stackBuilder.addNextIntent(mainIntent)
+            stackBuilder.addNextIntent(chatIntent)
+
+            pendingIntent = stackBuilder.getPendingIntent(
+                partnerUid.hashCode(), // 고유 ID 사용하여 덮어쓰기 방지
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        } else {
+            // 일반 알림은 MainActivity로 이동
+            val intent = Intent(this, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            pendingIntent = PendingIntent.getActivity(
+                this, 0, intent,
+                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+            )
+        }
 
         val channelId = getString(R.string.default_notification_channel_id)
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_app_logo) // 앱 로고 혹은 알림 아이콘 사용
+            .setSmallIcon(R.drawable.ic_app_logo)
             .setContentTitle(title)
             .setContentText(messageBody)
             .setAutoCancel(true)
@@ -67,7 +83,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // 안드로이드 오레오 이상을 위한 알림 채널 설정
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
@@ -77,7 +92,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build())
+        notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
     }
 
     companion object {
