@@ -63,7 +63,7 @@ class SignUpActivity : AppCompatActivity() {
                     finish()
                 } else {
                     // 회원가입 실패 (예: 이미 존재하는 계정, 형식 오류 등)
-                    // Firebase Auth 예외 메시지를 사용자에게 보여줍니다.
+                    // Firebase Auth 예외 메시지를 사용자에게 표시
                     Toast.makeText(this, "회원가입 실패: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                 }
             }

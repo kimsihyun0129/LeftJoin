@@ -46,7 +46,7 @@ class PostListFragment : Fragment() {
         setupRecyclerView()
         loadPostList() // 앱 시작 시 초기 로드
 
-        // ⬅️ [추가] SwipeRefreshLayout 리스너 설정
+        // SwipeRefreshLayout 리스너 설정
         binding.swipeRefreshLayout.setOnRefreshListener {
             // 수동 새로고침 시작
             loadPostList(isManualRefresh = true)
@@ -73,29 +73,25 @@ class PostListFragment : Fragment() {
         }
     }
 
-    /**
-     * 게시글 목록을 Firestore에서 로드합니다.
-     * @param isManualRefresh 수동 새로고침인지 여부를 판단하여 토스트 메시지 및 애니메이션을 제어합니다.
-     */
     private fun loadPostList(isManualRefresh: Boolean = false) {
         // 'posts' 컬렉션에서 'createdAt' 기준으로 내림차순 정렬하여 데이터 가져오기 (최신순)
         firestore.collection("posts")
             .orderBy("createdAt", Query.Direction.DESCENDING)
-            .get() // ⬅️ [수정] addSnapshotListener 대신 일회성 get() 호출
+            .get() // addSnapshotListener 대신 일회성 get() 호출
             .addOnSuccessListener { snapshot ->
                 val postList = snapshot.toObjects(Post::class.java)
                 postAdapter.submitList(postList)
 
                 // 새로고침 완료 후 애니메이션 중지
                 if (isManualRefresh) {
-                    binding.swipeRefreshLayout.isRefreshing = false // ⬅️ 애니메이션 중지
+                    binding.swipeRefreshLayout.isRefreshing = false // 애니메이션 중지
                     Toast.makeText(context, "목록이 새로고침되었습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
             .addOnFailureListener { e ->
                 // 새로고침 완료 후 애니메이션 중지
                 if (isManualRefresh) {
-                    binding.swipeRefreshLayout.isRefreshing = false // ⬅️ 애니메이션 중지
+                    binding.swipeRefreshLayout.isRefreshing = false // 애니메이션 중지
                 }
                 Toast.makeText(context, "게시글 로드 실패: ${e.message}", Toast.LENGTH_LONG).show()
             }

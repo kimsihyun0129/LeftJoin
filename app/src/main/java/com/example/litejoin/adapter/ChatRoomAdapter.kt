@@ -77,7 +77,7 @@ class ChatRoomAdapter(private val itemClickListener: (ChatRoom, String) -> Unit)
             // 게시글 제목 표시
             if (!chatRoom.postTitle.isNullOrEmpty()) {
                 binding.tvPostTitle.visibility = View.VISIBLE
-                binding.tvPostTitle.text = " / +${chatRoom.postTitle}"
+                binding.tvPostTitle.text = "${chatRoom.postTitle}"
             } else {
                 binding.tvPostTitle.visibility = View.GONE
             }

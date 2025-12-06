@@ -122,7 +122,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
 
-    //로그인 성공 후 사용자 정보 입력 여부에 따라 화면을 분기합니다.
+    // 로그인 성공 후 사용자 정보 입력 여부에 따라 화면을 분기
     private fun navigateToNextScreen() {
         val uid = auth.currentUser?.uid
         if (uid == null) {
@@ -140,7 +140,7 @@ class LoginActivity : AppCompatActivity() {
                 } else {
                     // 2. 사용자 정보가 없는 경우 (최초 로그인 또는 미입력)
                     val intent = Intent(this, UserProfileActivity::class.java)
-                    // 현재 사용자 정보를 입력하지 않았다면, 로그아웃하지 않고 정보 입력 화면으로만 이동합니다.
+                    // 현재 사용자 정보를 입력하지 않았다면, 로그아웃하지 않고 정보 입력 화면으로만 이동
                     startActivity(intent)
                 }
 

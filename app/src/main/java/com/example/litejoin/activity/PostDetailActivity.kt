@@ -60,7 +60,7 @@ class PostDetailActivity : AppCompatActivity() {
             }
         }
 
-        // [수정] 이 Activity는 타인 글만 보므로, 채팅 버튼을 항상 표시합니다.
+        // 이 Activity는 타인 글만 보므로, 채팅 버튼을 항상 표시
         binding.btnStartChat.visibility = android.view.View.VISIBLE
     }
 
@@ -108,20 +108,19 @@ class PostDetailActivity : AppCompatActivity() {
     }
 
     // --- 수정/삭제 메뉴 처리 (제거) ---
-    // [수정] 이 Activity는 타인 글만 보므로, 메뉴를 표시하지 않습니다.
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         // 메뉴를 표시할 조건이 없으므로 항상 false 반환
         return false
     }
 
-    // [수정] onOptionsItemSelected에서 수정/삭제 항목 제거 (메뉴가 표시되지 않으므로 사실상 불필요)
+    // onOptionsItemSelected에서 수정/삭제 항목 제거 (메뉴가 표시되지 않으므로 사실상 불필요)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return super.onOptionsItemSelected(item)
     }
 
     // --- 채팅 시작 임시 로직 (10단계에서 완성) ---
     private fun startChatWithUser(partnerUid: String, partnerNickname: String) {
-        val currentUid = auth.currentUser?.uid // currentUid를 다시 가져옵니다.
+        val currentUid = auth.currentUser?.uid
 
         if (currentUid == null || currentUid == partnerUid) {
             // 이미 PostListFragment에서 차단되었어야 하지만, 안전 장치 유지
@@ -135,9 +134,6 @@ class PostDetailActivity : AppCompatActivity() {
         // 상대방의 UID를 Intent에 PARTNER_UID 키로 전달합니다.
         intent.putExtra("PARTNER_UID", partnerUid)
         intent.putExtra("POST_TITLE", currentPost?.title)
-
-        // [선택 사항] 툴바에 표시할 상대방 닉네임을 미리 전달하여 DB 조회를 줄일 수 있습니다.
-        // intent.putExtra("PARTNER_NICKNAME", partnerNickname)
 
         startActivity(intent)
     }

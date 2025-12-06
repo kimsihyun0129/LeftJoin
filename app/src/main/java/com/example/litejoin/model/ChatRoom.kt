@@ -7,6 +7,4 @@ data class ChatRoom(
     val users: HashMap<String, Boolean> = HashMap(), // 참여 사용자 UID 목록
     val postTitle: String? = null, // 게시글 제목
     val lastRead: HashMap<String, Long> = HashMap() // 사용자별 마지막 읽음 시간
-    // ChatRoom 자체에는 Realtime DB에서 직접 가져올 사용자 닉네임/프로필 정보는 포함하지 않습니다.
-    // 이 정보는 Firestore의 User 컬렉션에서 가져와 사용해야 합니다.
 )

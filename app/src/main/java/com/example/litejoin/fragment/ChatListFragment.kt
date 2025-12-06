@@ -52,7 +52,6 @@ class ChatListFragment : Fragment() {
     private fun setupRecyclerView() {
         // 어댑터 초기화 및 아이템 클릭 리스너 정의
         chatRoomAdapter = ChatRoomAdapter { chatRoom, partnerUid ->
-            // ⬅️ [핵심 수정] requireContext() 대신 안전하게 binding.root.context 사용
             // 프래그먼트가 Detached 상태일 때 requireContext()가 호출되면 IllegalStateException 발생 가능
             val context = binding.root.context
             val intent = Intent(context, ChatActivity::class.java)

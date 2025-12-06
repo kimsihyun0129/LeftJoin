@@ -87,7 +87,7 @@ class MessageAdapter(private val currentUid: String) :
                         // 닉네임 설정
                         binding.tvPartnerNickname.text = it.nickname ?: "알 수 없는 사용자"
 
-                        // ⬅️ [핵심] 프로필 이미지 로드
+                        // 프로필 이미지 로드
                         if (!it.profileImageUrl.isNullOrEmpty()) {
                             // Glide를 사용하여 CircleImageView에 이미지 로드
                             Glide.with(binding.root.context)

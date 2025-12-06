@@ -1,8 +1,6 @@
 package com.example.litejoin.activity
 
-import android.content.Intent
 import android.os.Bundle
-import android.view.WindowManager // WindowManager import 추가
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.litejoin.adapter.MessageAdapter
@@ -37,9 +35,6 @@ class ChatActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ⬅️ [수정] 키보드 조정 모드를 강제로 적용하는 코드는 제거합니다.
-        // 이 기능은 AndroidManifest.xml의 adjustPan 설정으로 처리합니다.
-
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -64,7 +59,7 @@ class ChatActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        // ⬅️ [추가] 채팅방에서 나갈 때 (화면이 가려지거나 닫힐 때) 마지막 읽은 시간을 갱신
+        // 채팅방에서 나갈 때 (화면이 가려지거나 닫힐 때) 마지막 읽은 시간을 갱신
         updateLastReadTime()
     }
 
@@ -118,8 +113,6 @@ class ChatActivity : AppCompatActivity() {
 
                     // 최신 메시지로 스크롤
                     binding.rvMessages.scrollToPosition(messageAdapter.itemCount - 1)
-
-                    // ⬅️ [TODO] 채팅 목록 갱신은 ChatListFragment의 ValueEventListener가 담당하므로, 별도 로직 불필요.
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -152,7 +145,7 @@ class ChatActivity : AppCompatActivity() {
 
     // --- 채팅방 정보 업데이트 (마지막 메시지/시간) ---
     private fun updateChatRoomLastMessage(lastMessage: String) {
-        // ⬅️ [수정] postTitle을 안전하게 추가하기 위해 mutableMapOf 사용
+        // postTitle을 안전하게 추가하기 위해 mutableMapOf 사용
         val chatRoomUpdate = mutableMapOf<String, Any>(
             "lastMessage" to lastMessage,
             "lastMessageTime" to System.currentTimeMillis(),

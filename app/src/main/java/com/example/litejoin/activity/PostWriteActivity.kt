@@ -1,7 +1,7 @@
 package com.example.litejoin.activity
 
 import android.os.Bundle
-import android.view.View // View import 추가
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -48,17 +48,17 @@ class PostWriteActivity : AppCompatActivity() {
         if (postId != null) {
             // 1. 수정 모드 (게시글 목록에서 본인 글 클릭 시)
             binding.btnWriteOrEdit.text = "수정하기"
-            binding.btnDeletePost.visibility = View.VISIBLE // ⬅️ 삭제 버튼 표시
+            binding.btnDeletePost.visibility = View.VISIBLE // 삭제 버튼 표시
             loadPostData(postId!!)
 
-            // 2. ⬅️ [추가] 삭제 버튼 리스너 설정
+            // 2. 삭제 버튼 리스너 설정
             binding.btnDeletePost.setOnClickListener {
                 showDeleteConfirmationDialog()
             }
         } else {
             // 3. 작성 모드 (FAB 클릭 시)
             binding.btnWriteOrEdit.text = "작성하기"
-            binding.btnDeletePost.visibility = View.GONE // ⬅️ 삭제 버튼 숨김 (필수)
+            binding.btnDeletePost.visibility = View.GONE // 삭제 버튼 숨김 (필수)
         }
     }
 
@@ -93,7 +93,7 @@ class PostWriteActivity : AppCompatActivity() {
                 finish()
             }
     }
-    // ... (savePost, savePostToFirestore 함수는 이전과 동일) ...
+
     private fun savePost() {
         val uid = auth.currentUser?.uid
         val title = binding.etTitle.text.toString().trim()
@@ -152,7 +152,7 @@ class PostWriteActivity : AppCompatActivity() {
             }
     }
 
-    // ⬅️ [추가] 삭제 확인 대화 상자
+    // 삭제 확인 대화 상자
     private fun showDeleteConfirmationDialog() {
         AlertDialog.Builder(this)
             .setTitle("게시글 삭제 확인")
@@ -164,7 +164,7 @@ class PostWriteActivity : AppCompatActivity() {
             .show()
     }
 
-    // ⬅️ [추가] 게시글 삭제 로직
+    // 게시글 삭제 로직
     private fun deletePost() {
         postId?.let { id ->
             firestore.collection("posts").document(id).delete()

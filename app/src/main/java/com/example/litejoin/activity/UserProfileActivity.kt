@@ -30,13 +30,13 @@ class UserProfileActivity : AppCompatActivity() {
     private var selectedImageUri: Uri? = null
     private lateinit var toolbarBinding: CustomToolbarUserInfoBinding
 
-    // 갤러리 접근 권한 요청 계약 (생략)
+    // 갤러리 접근 권한 요청 계약
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) { openGallery() } else { Toast.makeText(this, "사진을 첨부하려면 저장소 권한이 필요합니다.", Toast.LENGTH_SHORT).show() }
         }
 
-    // 갤러리 이미지 선택 계약 (생략)
+    // 갤러리 이미지 선택 계약
     private val pickImageLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
@@ -78,11 +78,10 @@ class UserProfileActivity : AppCompatActivity() {
             performLogout()
         }
 
-        // 6. 기존 정보 로드 (수정 시나리오)
+        // 6. 기존 정보 로드
         loadUserProfile()
     }
 
-    // --- 이미지 처리 로직 (생략) ---
     private fun checkStoragePermission() {
         val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.READ_MEDIA_IMAGES
@@ -109,7 +108,7 @@ class UserProfileActivity : AppCompatActivity() {
         pickImageLauncher.launch(intent)
     }
 
-    // --- 데이터 로드 로직 (순서 수정) ---
+    // --- 데이터 로드 로직 ---
     private fun loadUserProfile() {
         val uid = auth.currentUser?.uid ?: return
 
@@ -120,8 +119,8 @@ class UserProfileActivity : AppCompatActivity() {
                     binding.etNickname.setText(it.nickname)
                     binding.etName.setText(it.name)
 
-                    binding.etSchool.setText(it.school) // ⬅️ [수정] 학교 먼저 로드
-                    binding.etStudentId.setText(it.studentId) // ⬅️ [수정] 학번 다음 로드
+                    binding.etSchool.setText(it.school) // 학교 먼저 로드
+                    binding.etStudentId.setText(it.studentId) // 학번 다음 로드
 
                     it.profileImageUrl?.let { url ->
                         Glide.with(this).load(url).into(binding.ivProfile)
@@ -130,14 +129,14 @@ class UserProfileActivity : AppCompatActivity() {
             }
     }
 
-    // --- 데이터 저장 로직 (순서 수정) ---
+    // --- 데이터 저장 로직 ---
     private fun saveUserProfile() {
         val uid = auth.currentUser?.uid
         val nickname = binding.etNickname.text.toString().trim()
         val name = binding.etName.text.toString().trim()
 
-        val school = binding.etSchool.text.toString().trim() // ⬅️ [수정] 학교 먼저 가져오기
-        val studentId = binding.etStudentId.text.toString().trim() // ⬅️ [수정] 학번 다음 가져오기
+        val school = binding.etSchool.text.toString().trim() // 학교 먼저 가져오기
+        val studentId = binding.etStudentId.text.toString().trim() // 학번 다음 가져오기
 
         if (uid == null || nickname.isEmpty()) {
             Toast.makeText(this, "닉네임은 필수 입력 항목입니다.", Toast.LENGTH_SHORT).show()
@@ -197,7 +196,7 @@ class UserProfileActivity : AppCompatActivity() {
         finish()
     }
 
-    // --- 로그아웃 로직 (유지) ---
+    // --- 로그아웃 로직 ---
     private fun performLogout() {
         auth.signOut()
 
