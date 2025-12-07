@@ -1,16 +1,12 @@
 package com.example.litejoin.activity
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.example.litejoin.databinding.ActivityUserProfileBinding
 import com.example.litejoin.databinding.CustomToolbarUserInfoBinding
@@ -30,18 +26,14 @@ class UserProfileActivity : AppCompatActivity() {
     private var selectedImageUri: Uri? = null
     private lateinit var toolbarBinding: CustomToolbarUserInfoBinding
 
-    // 갤러리 접근 권한 요청 계약
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) { openGallery() } else { Toast.makeText(this, "사진을 첨부하려면 저장소 권한이 필요합니다.", Toast.LENGTH_SHORT).show() }
-        }
-
-    // 갤러리 이미지 선택 계약
+    // ⬅️ [수정] Android Photo Picker 사용 (권한 요청 없이 사진 선택 가능)
     private val pickImageLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                selectedImageUri = result.data?.data
+        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            if (uri != null) {
+                selectedImageUri = uri
                 Glide.with(this).load(selectedImageUri).into(binding.ivProfile)
+            } else {
+                // 사용자가 선택을 취소한 경우
             }
         }
 
@@ -62,10 +54,10 @@ class UserProfileActivity : AppCompatActivity() {
             }
         }
 
-
         // 3. 프로필 이미지 첨부 버튼 리스너
         binding.btnAttachPhoto.setOnClickListener {
-            checkStoragePermission()
+            // ⬅️ [수정] 권한 확인 과정 없이 바로 포토 피커 실행
+            pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
 
         // 4. 저장 버튼 리스너
@@ -80,32 +72,6 @@ class UserProfileActivity : AppCompatActivity() {
 
         // 6. 기존 정보 로드
         loadUserProfile()
-    }
-
-    private fun checkStoragePermission() {
-        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Manifest.permission.READ_MEDIA_IMAGES
-        } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        }
-
-        when {
-            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> {
-                openGallery()
-            }
-            shouldShowRequestPermissionRationale(permission) -> {
-                Toast.makeText(this, "프로필 사진을 설정하려면 권한이 필요합니다.", Toast.LENGTH_LONG).show()
-                requestPermissionLauncher.launch(permission)
-            }
-            else -> {
-                requestPermissionLauncher.launch(permission)
-            }
-        }
-    }
-
-    private fun openGallery() {
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        pickImageLauncher.launch(intent)
     }
 
     // --- 데이터 로드 로직 ---
